@@ -1,0 +1,61 @@
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  .screen-only {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+    font-family: 'Times New Roman', Times, serif;
+    color: #000 !important;
+    background: #fff !important;
+    font-size: 11pt;
+    line-height: 1.2;
+    padding: 12mm 15mm !important;
+    box-sizing: border-box;
+  }
+
+  body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    margin-bottom: 20px;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #000 !important;
+    padding: 4px 6px;
+    font-size: 10pt;
+    vertical-align: middle;
+  }
+
+  .print-table thead {
+    display: table-header-group;
+  }
+
+  .print-table tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-footer {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-top: 20px;
+  }
+}

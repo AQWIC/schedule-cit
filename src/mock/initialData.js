@@ -1,0 +1,95 @@
+export const DAYS_OF_WEEK = [
+  { key: 'mon', label: 'понед.' },
+  { key: 'tue', label: 'вторник' },
+  { key: 'wed', label: 'среда' },
+  { key: 'thu', label: 'четверг' },
+  { key: 'fri', label: 'пятница' },
+  { key: 'sat', label: 'суббота', isWeekend: true },
+  { key: 'sun', label: 'воскр.', isWeekend: true },
+];
+
+export const INITIAL_SIGNATORIES = {
+  rector: 'А.А. Кузнецов',
+  headOfCit: 'Ринейский К.Н.',
+  dateCit: '25.09.2026',
+  headOfHr: 'О.Н. Климентьева',
+  tradeUnion: 'А.Л. Климентьев',
+};
+
+export const INITIAL_EMPLOYEES = [
+  {
+    id: 1,
+    name: 'Ерусалимов В.В.',
+    timeOffBalance: 0,
+    lunch: '12.00-13.00',
+    days: {
+      mon: '8.00-17.00',
+      tue: '8.00-17.00',
+      wed: '8.00-17.00',
+      thu: '8.00-17.00',
+      fri: '8.00-17.00',
+      sat: 'Вых',
+      sun: 'Вых',
+    },
+  },
+  {
+    id: 2,
+    name: 'Юрченко Н.В.',
+    timeOffBalance: 0,
+    lunch: '12.00-13.00',
+    days: {
+      mon: '8.00-17.00',
+      tue: '8.00-17.00',
+      wed: '8.00-17.00',
+      thu: '8.00-17.00',
+      fri: '8.00-17.00',
+      sat: 'Вых',
+      sun: 'Вых',
+    },
+  },
+  {
+    id: 3,
+    name: 'Зуева В.Н.',
+    timeOffBalance: 0,
+    lunch: '16.00-17.00',
+    days: {
+      mon: '14.00-21.00',
+      tue: '14.00-21.00',
+      wed: '14.00-21.00',
+      thu: '14.00-21.00',
+      fri: '14.00-21.00',
+      sat: 'Вых',
+      sun: 'Вых',
+    },
+  },
+  {
+    id: 4,
+    name: 'Шарпалёв М.В.',
+    timeOffBalance: 0,
+    lunch: '12.00-13.00',
+    days: {
+      mon: '7.45-15.45',
+      tue: '7.45-15.45',
+      wed: '7.45-15.45',
+      thu: '7.45-15.45',
+      fri: '7.45-15.45',
+      sat: '7.45-13.45',
+      sun: 'Вых',
+    },
+  },
+  {
+    id: 5,
+    name: 'Шлепоченко М.А.',
+    timeOffBalance: 0,
+    lunch: '12.00-13.00',
+    days: {
+      mon: 'Больничный',
+      tue: 'Больничный',
+      wed: 'Больничный',
+      thu: '8.00-17.00',
+      fri: '8.00-17.00',
+      sat: 'Вых',
+      sun: 'Вых',
+    },
+  },
+];
