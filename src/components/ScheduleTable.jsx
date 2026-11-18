@@ -255,14 +255,19 @@ export function ScheduleTable({
                         position: 'relative',
                         userSelect: dragFill ? 'none' : undefined,
                         backgroundColor: isInFillRange
-                          ? '#ffffff'
+                          ? '#d0ebff'
                           : day.isWeekend
                             ? '#fffde7'
                             : undefined,
-                        boxShadow: isActive ? 'inset 0 0 0 2px #228be6' : undefined,
+                        boxShadow: isInFillRange
+                          ? 'inset 0 0 0 2px #1971c2'
+                          : isActive
+                            ? 'inset 0 0 0 2px #228be6'
+                            : undefined,
+                        transition: 'background-color 0.08s ease, box-shadow 0.08s ease',
                       }}
                     >
-                      <Group gap={0} wrap="nowrap" align="center" style={{ width: '100%' }}>
+                      <Group gap={0} wrap="nowrap" align="center" style={{ width: '100%', pointerEvents: dragFill ? 'none' : undefined }}>
                         <TextInput
                           size="xs"
                           variant="unstyled"

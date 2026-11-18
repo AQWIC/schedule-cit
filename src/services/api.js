@@ -3,7 +3,7 @@ import { notifications } from '@mantine/notifications';
 import { INITIAL_EMPLOYEES } from '../mock/initialData';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: 'http://localhost:5000/api', // Адрес нашего бэкенда Express + PostgreSQL
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ apiClient.interceptors.response.use(
 
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri'];
 
-// работа в выходно?
+// работа в выходной?
 export function isWorkingWeekend(val) {
   if (!val) return false;
   const clean = val.trim().toLowerCase();
@@ -42,7 +42,7 @@ export function isWorkingWeekend(val) {
   );
 }
 
-// подсчёт отгулов
+// подсчёт дельты отгулов
 export function calculateWeeklyDelta(days) {
   if (!days) return 0;
 
@@ -63,76 +63,59 @@ export function calculateWeeklyDelta(days) {
 const STORAGE_KEY = 'cit_schedule_weeks';
 
 export const api = {
+  // Получить график недели из PostgreSQL (с автоматическим фоллбэком на локальные данные при выключенном сервере)
   async getSchedule(weekKey) {
+    try {
+      const response = await apiClient.get(`/schedule/${weekKey}`);
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        return response.data;
+      }
+    } catch (e) {
+      console.warn('Сервер недоступен, используем локальное хранилище:', e.message);
+    }
+
+    // Фоллбэк на localStorage, если бэкенд не запущен
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const weeksData = JSON.parse(saved);
-
         if (weeksData && weeksData[weekKey]) {
           return weeksData[weekKey];
         }
-
-        // если неделя новая, переносим отгулы
-        const existingKeys = Object.keys(weeksData).sort();
-        if (existingKeys.length > 0) {
-          const lastKey = existingKeys[existingKeys.length - 1];
-          const lastEmployees = weeksData[lastKey];
-
-          if (Array.isArray(lastEmployees) && lastEmployees.length > 0) {
-            return lastEmployees.map((emp) => ({
-              id: emp.id,
-              name: emp.name,
-              lunch: emp.lunch || '12.00-13.00',
-              note: '',
-              timeOffBalance: (Number(emp.timeOffBalance) || 0) + calculateWeeklyDelta(emp.days),
-              days: emp.days
-                ? { ...emp.days }
-                : {
-                    mon: '8.00-17.00',
-                    tue: '8.00-17.00',
-                    wed: '8.00-17.00',
-                    thu: '8.00-17.00',
-                    fri: '8.00-17.00',
-                    sat: 'Вых',
-                    sun: 'Вых',
-                  },
-            }));
-          }
-        }
-      } catch (e) {
-        console.error('Ошибка чтения данных недели', e);
+      } catch (err) {
+        console.error(err);
       }
     }
-
     return INITIAL_EMPLOYEES;
   },
 
+  // Сохранить график недели в PostgreSQL
   async saveSchedule(weekKey, employees) {
-    let weeksData = {};
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          weeksData = parsed;
+    try {
+      await apiClient.post(`/schedule/${weekKey}`, employees);
+      notifications.show({
+        color: 'teal',
+        title: 'Успешно',
+        message: `График на неделю ${weekKey} сохранён в базе данных PostgreSQL`,
+        autoClose: 3000,
+      });
+      return true;
+    } catch (e) {
+      console.warn('Не удалось сохранить на сервер, сохраняем в localStorage:', e.message);
+      // Дублируем в localStorage для надежности
+      let weeksData = {};
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          weeksData = JSON.parse(saved);
+        } catch (err) {
+          weeksData = {};
         }
-      } catch (e) {
-        weeksData = {};
       }
+      weeksData[weekKey] = employees;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(weeksData));
+      return true;
     }
-
-    weeksData[weekKey] = employees;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(weeksData));
-
-    notifications.show({
-      color: 'teal',
-      title: 'Успешно',
-      message: `График на неделю ${weekKey} сохранён в базе данных`,
-      autoClose: 3000,
-    });
-
-    return true;
   },
 
   client: apiClient,
