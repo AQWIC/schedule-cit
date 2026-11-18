@@ -8,21 +8,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// разрешаем браузеру делать запросы с другого порта (cors)
 app.use(cors());
-// чтобы сервер понимал входящие данные в формате json
 app.use(express.json());
 
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri'];
 
-// проверяем, был ли сотрудник на работе в выходной
 function isWorkingWeekend(val) {
   if (!val) return false;
   const clean = val.trim().toLowerCase();
   return clean !== 'вых' && clean !== 'больничный' && clean !== 'отгул' && clean !== '—' && clean !== '-';
 }
 
-// считаем отгулы за неделю (+1 за работу в выходной, -1 если брал отгул в будни)
 function calculateWeeklyDelta(days) {
   if (!days) return 0;
   let earned = 0;
