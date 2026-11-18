@@ -35,16 +35,13 @@ function calculateWeeklyDelta(days) {
   return earned - spent;
 }
 
-// -------------------------------------------------------------
 // запросы к серверу (api)
-// -------------------------------------------------------------
 
 // 1. отдаем график на выбранную неделю
 app.get('/api/schedule/:weekKey', async (req, res) => {
   const { weekKey } = req.params;
 
   try {
-    // проверяем, есть ли уже сохраненный график для этой недели
     const checkSchedule = await pool.query(
       'SELECT COUNT(*) FROM weekly_schedules WHERE week_key = $1',
       [weekKey]
@@ -52,7 +49,6 @@ app.get('/api/schedule/:weekKey', async (req, res) => {
     const hasWeekData = parseInt(checkSchedule.rows[0].count, 10) > 0;
 
     if (hasWeekData) {
-      // если график уже есть, просто достаем его из базы
       const query = `
         SELECT 
           e.id, 
@@ -86,7 +82,6 @@ app.get('/api/schedule/:weekKey', async (req, res) => {
       return res.json(formatted);
     }
 
-    // если неделя новая, ищем предыдущую сохраненную неделю
     const latestWeekRes = await pool.query(`
       SELECT week_key FROM weekly_schedules 
       WHERE week_key < $1
@@ -126,14 +121,13 @@ app.get('/api/schedule/:weekKey', async (req, res) => {
           lunch: row.lunch || '12.00-13.00',
           timeOffBalance: (Number(row.timeOffBalance) || 0) + delta,
           note: '',
-          days: prevDays, // переносим смены с прошлой недели
+          days: prevDays,
         };
       });
 
       return res.json(carriedOver);
     }
 
-    // если в базе еще вообще нет сохраненных недель, отдаем стандартный график
     const allEmployees = await pool.query('SELECT * FROM employees ORDER BY id ASC');
     const defaultList = allEmployees.rows.map((emp) => ({
       id: emp.id,
@@ -170,18 +164,16 @@ app.post('/api/schedule/:weekKey', async (req, res) => {
 
   const client = await pool.connect();
   try {
-    // начинаем транзакцию, чтобы все изменения применились вместе
+
     await client.query('BEGIN');
 
     for (const emp of employees) {
-      // обновляем общие данные сотрудника (обед, баланс отгулов)
       await client.query(`
         UPDATE employees 
         SET name = $1, lunch = $2, time_off_balance = $3
         WHERE id = $4
       `, [emp.name, emp.lunch, emp.timeOffBalance || 0, emp.id]);
 
-      // сохраняем или обновляем смены на эту неделю
       const d = emp.days || {};
       await client.query(`
         INSERT INTO weekly_schedules (
@@ -212,16 +204,13 @@ app.post('/api/schedule/:weekKey', async (req, res) => {
       ]);
     }
 
-    // фиксируем (подтверждаем) транзакцию
     await client.query('COMMIT');
     res.json({ success: true, message: 'График успешно сохранен в базе данных' });
   } catch (error) {
-    // если произошла ошибка, откатываем все изменения назад
     await client.query('ROLLBACK');
     console.error('Ошибка сохранения графика:', error);
     res.status(500).json({ message: 'Ошибка сохранения графика в базу данных' });
   } finally {
-    // отпускаем клиента базы обратно в пул
     client.release();
   }
 });
@@ -277,15 +266,14 @@ app.delete('/api/employees/:id', async (req, res) => {
   }
 });
 
-// запускаем сервер и проверяем базу данных
 async function startServer() {
   try {
     await initDatabase();
     app.listen(PORT, () => {
-      console.log(`🚀 Бэкенд-сервер запущен: http://localhost:${PORT}`);
+      console.log(`Бэкенд-сервер запущен: http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error('❌ Не удалось запустить сервер из-за ошибки БД:', error.message);
+    console.error('Не удалось запустить сервер из-за ошибки БД:', error.message);
   }
 }
 
